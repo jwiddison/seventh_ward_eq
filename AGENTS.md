@@ -3,6 +3,7 @@ This is a web application written using the Phoenix web framework.
 ## Project guidelines
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
+- Run `mix credo --strict` before committing and fix all reported issues
 - Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
 
 ### Phoenix v1.8 guidelines
@@ -84,6 +85,24 @@ custom classes must fully style the input
 - Predicate function names should not start with `is_` and should end in a question mark. Names like `is_thing` should be reserved for guards
 - Elixir's builtin OTP primitives like `DynamicSupervisor` and `Registry`, require names in the child spec, such as `{DynamicSupervisor, name: MyApp.MyDynamicSup}`, then you can use `DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`
 - Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with back-pressure. The majority of times you will want to pass `timeout: :infinity` as option
+
+## Elixir Style Guide
+
+- Include typespecs on all functions, public and private.
+- Public functions that can reasonably have function docs and doctests should have function `@doc`s and doctests.
+- Always group public function definitions together, in alphabetical order, first in a module.
+- If a module defines any private functions, use this comment block to separate the public function definitions from the private function definitions:
+
+    ```elixir
+    ################################################################################
+    # PRIVATE
+    ################################################################################
+    ```
+
+- Group private function definitions together, after the comment block, in alphabetical order.
+- At any point where a function is more than around 10 lines, consider breaking logic into private functions.
+- At any point where a module has more than around 10 functions in it, consider breaking the module into separate modules. Share a plan and ask about the best way to break things up before doing this.
+- Prefer semantic and descriptive names for things wherever is reasonable, even if that means module, function, argument, or variable names are slightly longer.
 
 ## Mix guidelines
 
