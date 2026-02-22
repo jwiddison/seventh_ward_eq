@@ -1,6 +1,8 @@
 defmodule SeventhWardEqWeb.Router do
   use SeventhWardEqWeb, :router
 
+  import SeventhWardEqWeb.UserAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,6 +10,7 @@ defmodule SeventhWardEqWeb.Router do
     plug :put_root_layout, html: {SeventhWardEqWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_current_scope_for_user
   end
 
   pipeline :api do
@@ -40,5 +43,24 @@ defmodule SeventhWardEqWeb.Router do
       live_dashboard "/dashboard", metrics: SeventhWardEqWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+  end
+
+  ## Authentication routes
+
+  scope "/", SeventhWardEqWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    get "/admin/settings", UserSettingsController, :edit
+    put "/admin/settings", UserSettingsController, :update
+    get "/admin/settings/confirm-email/:token", UserSettingsController, :confirm_email
+  end
+
+  scope "/", SeventhWardEqWeb do
+    pipe_through [:browser]
+
+    get "/admin/log-in", UserSessionController, :new
+    get "/admin/log-in/:token", UserSessionController, :confirm
+    post "/admin/log-in", UserSessionController, :create
+    delete "/admin/log-out", UserSessionController, :delete
   end
 end
