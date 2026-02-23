@@ -17,10 +17,17 @@ defmodule SeventhWardEqWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Public routes — no authentication required.
+  # PageController handles the / → /eq redirect (plain controller, no live_session needed).
+  # AuxiliaryLive handles each auxiliary's public landing page.
   scope "/", SeventhWardEqWeb do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live_session :public do
+      live "/:slug", AuxiliaryLive
+    end
   end
 
   # Other scopes may use custom stacks.

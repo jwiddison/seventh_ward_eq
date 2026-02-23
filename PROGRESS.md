@@ -10,8 +10,8 @@ Last updated: 2026-02-22
 |---|---|---|
 | Phase 1 | Authentication & User Model | ✅ Complete |
 | Phase 2 | Database Schema (Posts + Events) | ✅ Complete |
-| Phase 3 | Public Landing Page | 🔜 Next |
-| Phase 4 | Admin Portal LiveViews | ⬜ Pending |
+| Phase 3 | Public Landing Page | ✅ Complete |
+| Phase 4 | Admin Portal LiveViews | 🔜 Next |
 | Phase 5 | TipTap Rich Text Editor | ⬜ Pending |
 | Phase 6 | UI / Design Polish | ⬜ Pending |
 | Phase 7 | Fly.io Deployment | ⬜ Pending |
@@ -100,7 +100,7 @@ Both hooks call `Accounts.get_user_by_session_token/1` which returns `{user, tok
 
 ---
 
-## Phase 3: Public Landing Page 🔜
+## Phase 3: Public Landing Page ✅
 
 ### What needs to be done
 
