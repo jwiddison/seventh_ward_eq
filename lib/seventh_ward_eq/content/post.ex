@@ -56,12 +56,18 @@ defmodule SeventhWardEq.Content.Post do
     |> cast(attrs, [:title, :body])
     |> validate_required([:title, :body])
     |> validate_length(:title, max: 255)
+    |> sanitize_body()
     |> validate_auxiliary()
   end
 
   ################################################################################
   # PRIVATE
   ################################################################################
+
+  @spec sanitize_body(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  defp sanitize_body(changeset) do
+    update_change(changeset, :body, &HtmlSanitizeEx.basic_html/1)
+  end
 
   @spec validate_auxiliary(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp validate_auxiliary(changeset) do

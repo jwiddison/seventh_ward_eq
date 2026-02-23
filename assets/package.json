@@ -1,0 +1,11 @@
+{
+  "name": "seventh_ward_eq_assets",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@tiptap/core": "^2.10.4",
+    "@tiptap/extension-link": "^2.10.4",
+    "@tiptap/extension-underline": "^2.10.4",
+    "@tiptap/starter-kit": "^2.10.4"
+  }
+}

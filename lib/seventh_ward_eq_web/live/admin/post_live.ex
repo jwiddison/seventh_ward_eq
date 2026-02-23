@@ -229,7 +229,20 @@ defmodule SeventhWardEqWeb.Admin.PostLive do
         class="space-y-5"
       >
         <.input field={@form[:title]} type="text" label="Title" required />
-        <.input field={@form[:body]} type="textarea" label="Body" rows="16" required />
+        <div class="space-y-1">
+          <label class="block text-sm font-semibold text-base-content">Body</label>
+          <div
+            id="tiptap-editor"
+            phx-hook="TiptapEditor"
+            phx-update="ignore"
+            data-content={@form[:body].value || ""}
+          >
+          </div>
+          <textarea name="post[body]" id="post-body-input" class="hidden" aria-hidden="true">{@form[:body].value || ""}</textarea>
+          <%= if msg = @form[:body].errors |> List.first() do %>
+            <p class="text-sm text-error">{translate_error(msg)}</p>
+          <% end %>
+        </div>
         <div class="flex gap-3">
           <.button type="submit" phx-disable-with="Saving…" class="btn btn-primary">
             {if @live_action == :new, do: "Create Post", else: "Save Changes"}

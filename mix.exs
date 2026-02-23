@@ -12,7 +12,8 @@ defmodule SeventhWardEq.MixProject do
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
-      test_coverage: [tool: ExCoveralls]
+      test_coverage: [tool: ExCoveralls],
+      dialyzer: [paths: ["_build/dev/lib/seventh_ward_eq/ebin"]]
     ]
   end
 
@@ -51,6 +52,7 @@ defmodule SeventhWardEq.MixProject do
       {:excoveralls, "~> 0.18.5", only: :test},
       {:ex_quality, "~> 0.3", only: :dev, runtime: false},
       {:gettext, "~> 1.0"},
+      {:html_sanitize_ex, "~> 1.4"},
       {:heroicons,
        github: "tailwindlabs/heroicons", tag: "v2.2.0", sparse: "optimized", app: false, compile: false, depth: 1},
       {:jason, "~> 1.2"},
