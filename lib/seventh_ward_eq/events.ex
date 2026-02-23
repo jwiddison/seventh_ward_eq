@@ -79,6 +79,44 @@ defmodule SeventhWardEq.Events do
   def get_event!(id), do: Repo.get!(Event, id)
 
   @doc """
+  Returns all events across every auxiliary, ordered by start date descending.
+
+  For use by the superadmin only — regular admins should use `list_events/1`.
+
+  ## Examples
+
+      list_all_events()
+
+  """
+  @spec list_all_events() :: [Event.t()]
+  def list_all_events do
+    from(e in Event, order_by: [desc: e.starts_on, desc_nulls_last: e.start_time])
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns all events for the given auxiliary slug, ordered by start date descending.
+
+  Intended for the admin events index, where both past and future events
+  are shown. Accepts real slugs or the combined `"youth"` slug.
+
+  ## Examples
+
+      list_events("eq")
+
+  """
+  @spec list_events(String.t()) :: [Event.t()]
+  def list_events(auxiliary_slug) do
+    slugs = Auxiliary.resolve(auxiliary_slug)
+
+    from(e in Event,
+      where: e.auxiliary in ^slugs,
+      order_by: [desc: e.starts_on, desc_nulls_last: e.start_time]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Returns all events that overlap with the given month for the given auxiliary slug.
 
   Handles multi-day events: an event is included if any part of it falls

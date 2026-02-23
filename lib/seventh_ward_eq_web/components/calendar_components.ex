@@ -203,25 +203,7 @@ defmodule SeventhWardEqWeb.CalendarComponents do
   ################################################################################
 
   @spec format_month(Date.t()) :: String.t()
-  defp format_month(date) do
-    month_name =
-      case date.month do
-        1 -> "January"
-        2 -> "February"
-        3 -> "March"
-        4 -> "April"
-        5 -> "May"
-        6 -> "June"
-        7 -> "July"
-        8 -> "August"
-        9 -> "September"
-        10 -> "October"
-        11 -> "November"
-        12 -> "December"
-      end
-
-    "#{month_name} #{date.year}"
-  end
+  defp format_month(date), do: Calendar.strftime(date, "%B %Y")
 
   @spec prev_month_param(Date.t()) :: String.t()
   defp prev_month_param(date) do

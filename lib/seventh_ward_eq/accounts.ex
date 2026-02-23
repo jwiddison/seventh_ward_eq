@@ -6,7 +6,7 @@ defmodule SeventhWardEq.Accounts do
   import Ecto.Query, warn: false
   alias SeventhWardEq.Repo
 
-  alias SeventhWardEq.Accounts.{User, UserToken, UserNotifier}
+  alias SeventhWardEq.Accounts.{User, UserNotifier, UserToken}
 
   ## Database getters
 
@@ -279,6 +279,82 @@ defmodule SeventhWardEq.Accounts do
   def delete_user_session_token(token) do
     Repo.delete_all(from(UserToken, where: [token: ^token, context: "session"]))
     :ok
+  end
+
+  ## Admin management (superadmin only)
+
+  @doc """
+  Returns a changeset for creating a new admin account (used to drive the
+  superadmin "new user" form).
+
+  Validates email format, password length, and auxiliary selection without
+  hashing the password or checking uniqueness (so live validation is cheap).
+  """
+  def change_admin_creation(user \\ %User{}, attrs \\ %{}) do
+    user
+    |> User.email_changeset(attrs, validate_unique: false)
+    |> User.password_changeset(attrs, hash_password: false)
+    |> User.admin_changeset(Map.put(attrs, "role", "admin"))
+    |> Ecto.Changeset.validate_required([:auxiliary])
+  end
+
+  @doc """
+  Creates a new admin account.
+
+  - Sets `role: "admin"` — callers cannot override this.
+  - `auxiliary` must be present in `attrs` and be a valid real slug.
+  - The account is immediately confirmed (no email confirmation step).
+  - Returns `{:ok, user}` or `{:error, changeset}`.
+  """
+  def create_admin(attrs) do
+    %User{}
+    |> User.email_changeset(attrs)
+    |> User.password_changeset(attrs)
+    |> User.admin_changeset(Map.put(attrs, "role", "admin"))
+    |> Ecto.Changeset.validate_required([:auxiliary])
+    |> User.confirm_changeset()
+    |> Repo.insert()
+  end
+
+  @doc """
+  Sends a welcome email to a newly created admin.
+
+  Generates a short-lived magic-link token so the admin can log in
+  immediately without needing a separate password-reset step.
+  """
+  def deliver_admin_welcome(%User{} = user, login_url_fun)
+      when is_function(login_url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "login")
+    Repo.insert!(user_token)
+    UserNotifier.deliver_welcome_email(user, login_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Deletes an admin account.
+
+  - Superadmin accounts are protected and cannot be deleted.
+  - Returns `{:ok, user}` or `{:error, reason}`.
+  """
+  def delete_admin(%User{role: "superadmin"}, _acting_user) do
+    {:error, :cannot_delete_superadmin}
+  end
+
+  def delete_admin(%User{} = user, %User{role: "superadmin"}) do
+    Repo.delete(user)
+  end
+
+  def delete_admin(_user, _acting_user) do
+    {:error, :unauthorized}
+  end
+
+  @doc """
+  Lists all admin accounts (role == "admin"), ordered by email.
+
+  Superadmin accounts are excluded from this list.
+  """
+  def list_admins do
+    import Ecto.Query
+    Repo.all(from u in User, where: u.role == "admin", order_by: [asc: u.email])
   end
 
   ## Token helper

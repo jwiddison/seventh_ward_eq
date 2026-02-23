@@ -1,6 +1,10 @@
 defmodule SeventhWardEq.Accounts.User do
+  @moduledoc false
+
   use Ecto.Schema
   import Ecto.Changeset
+
+  @type t :: %__MODULE__{}
 
   schema "users" do
     field :email, :string

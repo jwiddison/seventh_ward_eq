@@ -17,17 +17,11 @@ defmodule SeventhWardEqWeb.Router do
     plug :accepts, ["json"]
   end
 
-  # Public routes — no authentication required.
-  # PageController handles the / → /eq redirect (plain controller, no live_session needed).
-  # AuxiliaryLive handles each auxiliary's public landing page.
+  # Public home route — redirect / → /eq.
   scope "/", SeventhWardEqWeb do
     pipe_through :browser
 
     get "/", PageController, :home
-
-    live_session :public do
-      live "/:slug", AuxiliaryLive
-    end
   end
 
   # Other scopes may use custom stacks.
@@ -49,6 +43,44 @@ defmodule SeventhWardEqWeb.Router do
 
       live_dashboard "/dashboard", metrics: SeventhWardEqWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
+    end
+  end
+
+  ## Admin portal routes
+  #
+  # All admin LiveViews live under /admin. Two live_sessions:
+  #   :admin_required  — content management (admins + superadmin)
+  #   :superadmin_required — user management (superadmin only)
+  #
+  # These must be defined BEFORE the public /:slug catch-all route below.
+  scope "/admin", SeventhWardEqWeb do
+    pipe_through :browser
+
+    live_session :admin_required,
+      on_mount: {SeventhWardEqWeb.LiveHooks.Auth, :require_admin} do
+      live "/", Admin.DashboardLive
+      live "/posts", Admin.PostLive, :index
+      live "/posts/new", Admin.PostLive, :new
+      live "/posts/:id/edit", Admin.PostLive, :edit
+      live "/events", Admin.EventLive, :index
+      live "/events/new", Admin.EventLive, :new
+      live "/events/:id/edit", Admin.EventLive, :edit
+    end
+
+    live_session :superadmin_required,
+      on_mount: {SeventhWardEqWeb.LiveHooks.Auth, :require_superadmin} do
+      live "/users", Admin.UserLive, :index
+      live "/users/new", Admin.UserLive, :new
+    end
+  end
+
+  # Public slug routes — must come AFTER all static /admin routes so the
+  # /:slug catch-all does not swallow admin paths.
+  scope "/", SeventhWardEqWeb do
+    pipe_through :browser
+
+    live_session :public do
+      live "/:slug", AuxiliaryLive
     end
   end
 

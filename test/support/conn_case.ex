@@ -17,6 +17,8 @@ defmodule SeventhWardEqWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias SeventhWardEq.Accounts.Scope
+
   using do
     quote do
       # The default endpoint for testing
@@ -46,7 +48,7 @@ defmodule SeventhWardEqWeb.ConnCase do
   """
   def register_and_log_in_user(%{conn: conn} = context) do
     user = SeventhWardEq.AccountsFixtures.user_fixture()
-    scope = SeventhWardEq.Accounts.Scope.for_user(user)
+    scope = Scope.for_user(user)
 
     opts =
       context

@@ -79,6 +79,22 @@ defmodule SeventhWardEq.Content do
   def get_post!(id), do: Repo.get!(Post, id)
 
   @doc """
+  Returns all posts across every auxiliary, ordered most-recent first.
+
+  For use by the superadmin only — regular admins should use `list_posts/1`.
+
+  ## Examples
+
+      list_all_posts()
+
+  """
+  @spec list_all_posts() :: [Post.t()]
+  def list_all_posts do
+    from(p in Post, order_by: [desc: p.inserted_at])
+    |> Repo.all()
+  end
+
+  @doc """
   Returns all posts for the given auxiliary slug, ordered most-recent first.
 
   Accepts real slugs (e.g. `"eq"`) or the combined `"youth"` slug.

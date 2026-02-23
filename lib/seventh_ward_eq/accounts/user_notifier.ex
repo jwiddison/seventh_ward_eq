@@ -1,8 +1,10 @@
 defmodule SeventhWardEq.Accounts.UserNotifier do
+  @moduledoc false
+
   import Swoosh.Email
 
-  alias SeventhWardEq.Mailer
   alias SeventhWardEq.Accounts.User
+  alias SeventhWardEq.Mailer
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
@@ -16,6 +18,32 @@ defmodule SeventhWardEq.Accounts.UserNotifier do
     with {:ok, _metadata} <- Mailer.deliver(email) do
       {:ok, email}
     end
+  end
+
+  @doc """
+  Deliver a welcome email to a newly created admin account.
+
+  Includes a magic link so the admin can log in immediately and set their
+  own password via the settings page.
+  """
+  def deliver_welcome_email(user, url) do
+    deliver(user.email, "Welcome to the Seventh Ward Admin Portal", """
+
+    ==============================
+
+    Hi #{user.email},
+
+    A Seventh Ward admin account has been created for you.
+
+    Click the link below to log in and get started:
+
+    #{url}
+
+    This link expires after 10 minutes. If you need a new one, visit the
+    login page and enter your email address.
+
+    ==============================
+    """)
   end
 
   @doc """

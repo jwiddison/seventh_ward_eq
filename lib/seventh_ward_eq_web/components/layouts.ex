@@ -86,6 +86,117 @@ defmodule SeventhWardEqWeb.Layouts do
   end
 
   @doc """
+  Renders the admin portal shell — sidebar navigation + content area.
+
+  All admin LiveViews wrap their content in this component (inside `Layouts.app`).
+  The sidebar shows the current admin's auxiliary (or "All Auxiliaries" for
+  superadmin) and adapts navigation links based on role.
+
+  ## Examples
+
+      <Layouts.admin_shell current_scope={@current_scope}>
+        <h1>Dashboard</h1>
+      </Layouts.admin_shell>
+
+  """
+  attr :current_scope, :map, required: true
+
+  slot :inner_block, required: true
+
+  def admin_shell(assigns) do
+    ~H"""
+    <div class="flex h-screen bg-base-100">
+      <%!-- Sidebar --%>
+      <aside
+        id="admin-sidebar"
+        class="w-56 shrink-0 bg-base-200 border-r border-base-300 flex flex-col"
+      >
+        <%!-- Brand / context --%>
+        <div class="px-4 py-5 border-b border-base-300">
+          <p class="text-xs font-semibold uppercase tracking-wider text-base-content/40 mb-0.5">
+            Admin Portal
+          </p>
+          <p class="text-sm font-bold text-base-content truncate">
+            {auxiliary_label(@current_scope)}
+          </p>
+        </div>
+
+        <%!-- Navigation --%>
+        <nav class="flex-1 p-3 space-y-0.5">
+          <.admin_nav_link navigate={~p"/admin"} icon="hero-squares-2x2-micro">
+            Dashboard
+          </.admin_nav_link>
+          <.admin_nav_link navigate={~p"/admin/posts"} icon="hero-document-text-micro">
+            Posts
+          </.admin_nav_link>
+          <.admin_nav_link navigate={~p"/admin/events"} icon="hero-calendar-days-micro">
+            Events
+          </.admin_nav_link>
+          <%= if @current_scope.user.role == "superadmin" do %>
+            <div class="pt-2 pb-1">
+              <p class="px-3 text-xs font-semibold uppercase tracking-wider text-base-content/30">
+                Superadmin
+              </p>
+            </div>
+            <.admin_nav_link navigate={~p"/admin/users"} icon="hero-users-micro">
+              Users
+            </.admin_nav_link>
+          <% end %>
+        </nav>
+
+        <%!-- Footer: user email + logout --%>
+        <div class="p-3 border-t border-base-300 space-y-1">
+          <p class="px-3 text-xs text-base-content/50 truncate">{@current_scope.user.email}</p>
+          <.link
+            href={~p"/admin/log-out"}
+            method="delete"
+            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-base-content/60
+                   hover:bg-base-300 hover:text-base-content transition-colors"
+          >
+            <.icon name="hero-arrow-left-start-on-rectangle-micro" class="size-4 shrink-0" /> Log out
+          </.link>
+        </div>
+      </aside>
+
+      <%!-- Main content --%>
+      <div class="flex-1 min-w-0 overflow-auto">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  # Internal helper — sidebar nav link with active-state highlighting.
+  attr :navigate, :string, required: true
+  attr :icon, :string, required: true
+  slot :inner_block, required: true
+
+  defp admin_nav_link(assigns) do
+    ~H"""
+    <.link
+      navigate={@navigate}
+      class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+             text-base-content/70 hover:bg-base-300 hover:text-base-content transition-colors"
+    >
+      <.icon name={@icon} class="size-4 shrink-0" />
+      {render_slot(@inner_block)}
+    </.link>
+    """
+  end
+
+  # Returns a human-readable label for the admin's auxiliary context.
+  @spec auxiliary_label(map()) :: String.t()
+  defp auxiliary_label(%{user: %{role: "superadmin"}}), do: "All Auxiliaries"
+  defp auxiliary_label(%{user: %{auxiliary: nil}}), do: "—"
+
+  defp auxiliary_label(%{user: %{auxiliary: slug}}) do
+    case SeventhWardEq.Auxiliary.get_by_slug(slug) do
+      %{name: name} -> name
+      nil -> slug
+    end
+  end
+
+  @doc """
   Provides dark vs light theme toggle based on themes defined in app.css.
 
   See <head> in root.html.heex which applies the theme before page load.
