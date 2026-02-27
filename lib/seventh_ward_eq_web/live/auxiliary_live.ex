@@ -21,6 +21,14 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
   @upcoming_events_limit 8
   @recent_posts_limit 5
 
+  @aux_border_classes %{
+    "blue" => "border-l-blue-500",
+    "green" => "border-l-green-600",
+    "purple" => "border-l-purple-500",
+    "amber" => "border-l-amber-400",
+    "orange" => "border-l-orange-500"
+  }
+
   @impl true
   @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) ::
           {:ok, Phoenix.LiveView.Socket.t()}
@@ -33,6 +41,7 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
         {:ok,
          socket
          |> assign(:auxiliary, auxiliary)
+         |> assign(:aux_border_class, Map.get(@aux_border_classes, auxiliary.color, "border-l-primary"))
          |> assign(:page_title, auxiliary.name)}
     end
   end
@@ -56,6 +65,12 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
     upcoming_events = Events.list_upcoming_events(auxiliary.slug, @upcoming_events_limit)
     posts = Content.list_posts(auxiliary.slug) |> Enum.take(@recent_posts_limit)
 
+    event_dates =
+      Enum.reduce(events, MapSet.new(), fn event, acc ->
+        end_date = event.ends_on || event.starts_on
+        Enum.reduce(Date.range(event.starts_on, end_date), acc, &MapSet.put(&2, &1))
+      end)
+
     selected_events =
       if selected_date do
         Enum.filter(events, &date_covers_event?(&1, selected_date))
@@ -70,6 +85,7 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
      |> assign(:week_layout, week_layout)
      |> assign(:upcoming_events, upcoming_events)
      |> assign(:posts, posts)
+     |> assign(:event_dates, event_dates)
      |> assign(:selected_events, selected_events)}
   end
 
@@ -80,10 +96,14 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
       <div class="min-h-screen bg-base-100">
         <%!-- Page header --%>
         <header class="border-b border-base-300 px-4 py-5 sm:px-6 lg:px-8">
-          <div class="mx-auto max-w-6xl">
-            <h1 class="text-2xl font-bold text-base-content tracking-tight">
-              {@auxiliary.name}
-            </h1>
+          <div class="mx-auto max-w-6xl flex items-center justify-between">
+            <div class={["pl-3 border-l-4", @aux_border_class]}>
+              <p class="text-xs uppercase tracking-widest text-base-content/40">Seventh Ward</p>
+              <h1 class="text-2xl font-bold text-base-content tracking-tight">
+                {@auxiliary.name}
+              </h1>
+            </div>
+            <Layouts.theme_toggle />
           </div>
         </header>
 
@@ -98,6 +118,7 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
                 selected_date={@selected_date}
                 auxiliary_slug={@auxiliary.slug}
                 color={@auxiliary.color}
+                event_dates={@event_dates}
               />
 
               <%!-- Selected day event list --%>
@@ -136,7 +157,7 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
                 <% else %>
                   <ul class="space-y-3">
                     <%= for event <- @upcoming_events do %>
-                      <li class="rounded-lg border border-base-300 bg-base-100 p-3 hover:bg-base-200/50 transition-colors">
+                      <li class="rounded-lg border border-base-300 bg-base-100 p-3 hover:bg-base-200/50 transition-colors shadow-sm">
                         <p class="font-medium text-base-content text-sm leading-snug">{event.title}</p>
                         <p class="text-xs text-base-content/50 mt-1">
                           {format_event_date_range(event)}
@@ -160,7 +181,7 @@ defmodule SeventhWardEqWeb.AuxiliaryLive do
                 <% else %>
                   <ul class="space-y-3">
                     <%= for post <- @posts do %>
-                      <li class="rounded-lg border border-base-300 bg-base-100 p-3 hover:bg-base-200/50 transition-colors">
+                      <li class="rounded-lg border border-base-300 bg-base-100 p-3 hover:bg-base-200/50 transition-colors shadow-sm">
                         <p class="font-medium text-base-content text-sm leading-snug">{post.title}</p>
                         <p class="text-xs text-base-content/50 mt-1">
                           {format_posted_at(post.inserted_at)}

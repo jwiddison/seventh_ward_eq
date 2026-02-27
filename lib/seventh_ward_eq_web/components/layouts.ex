@@ -100,6 +100,7 @@ defmodule SeventhWardEqWeb.Layouts do
 
   """
   attr :current_scope, :map, required: true
+  attr :current_section, :atom, default: nil
 
   slot :inner_block, required: true
 
@@ -123,13 +124,28 @@ defmodule SeventhWardEqWeb.Layouts do
 
         <%!-- Navigation --%>
         <nav class="flex-1 p-3 space-y-0.5">
-          <.admin_nav_link navigate={~p"/admin"} icon="hero-squares-2x2-micro">
+          <.admin_nav_link
+            navigate={~p"/admin"}
+            icon="hero-squares-2x2-micro"
+            current_section={@current_section}
+            nav_key={:dashboard}
+          >
             Dashboard
           </.admin_nav_link>
-          <.admin_nav_link navigate={~p"/admin/posts"} icon="hero-document-text-micro">
+          <.admin_nav_link
+            navigate={~p"/admin/posts"}
+            icon="hero-document-text-micro"
+            current_section={@current_section}
+            nav_key={:posts}
+          >
             Posts
           </.admin_nav_link>
-          <.admin_nav_link navigate={~p"/admin/events"} icon="hero-calendar-days-micro">
+          <.admin_nav_link
+            navigate={~p"/admin/events"}
+            icon="hero-calendar-days-micro"
+            current_section={@current_section}
+            nav_key={:events}
+          >
             Events
           </.admin_nav_link>
           <%= if @current_scope.user.role == "superadmin" do %>
@@ -138,7 +154,12 @@ defmodule SeventhWardEqWeb.Layouts do
                 Superadmin
               </p>
             </div>
-            <.admin_nav_link navigate={~p"/admin/users"} icon="hero-users-micro">
+            <.admin_nav_link
+              navigate={~p"/admin/users"}
+              icon="hero-users-micro"
+              current_section={@current_section}
+              nav_key={:users}
+            >
               Users
             </.admin_nav_link>
           <% end %>
@@ -169,14 +190,21 @@ defmodule SeventhWardEqWeb.Layouts do
   # Internal helper — sidebar nav link with active-state highlighting.
   attr :navigate, :string, required: true
   attr :icon, :string, required: true
+  attr :current_section, :atom, default: nil
+  attr :nav_key, :atom, default: nil
   slot :inner_block, required: true
 
   defp admin_nav_link(assigns) do
+    assigns = assign(assigns, :active, assigns.nav_key != nil and assigns.nav_key == assigns.current_section)
+
     ~H"""
     <.link
       navigate={@navigate}
-      class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-             text-base-content/70 hover:bg-base-300 hover:text-base-content transition-colors"
+      class={[
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+        @active && "bg-base-300 text-base-content font-semibold",
+        !@active && "text-base-content/70 hover:bg-base-300 hover:text-base-content"
+      ]}
     >
       <.icon name={@icon} class="size-4 shrink-0" />
       {render_slot(@inner_block)}

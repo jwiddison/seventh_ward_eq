@@ -32,6 +32,7 @@ defmodule SeventhWardEqWeb.CalendarComponents do
   attr :selected_date, :any, default: nil, doc: "currently selected Date.t() or nil"
   attr :auxiliary_slug, :string, required: true
   attr :color, :string, required: true, doc: "auxiliary color key (blue, green, etc.)"
+  attr :event_dates, :any, default: nil, doc: "MapSet of Date.t() that have events"
 
   def month_calendar(assigns) do
     ~H"""
@@ -79,6 +80,7 @@ defmodule SeventhWardEqWeb.CalendarComponents do
             selected_date={@selected_date}
             auxiliary_slug={@auxiliary_slug}
             color={@color}
+            event_dates={@event_dates}
             last={week_idx == length(@weeks) - 1}
           />
         <% end %>
@@ -96,6 +98,7 @@ defmodule SeventhWardEqWeb.CalendarComponents do
   attr :selected_date, :any, default: nil
   attr :auxiliary_slug, :string, required: true
   attr :color, :string, required: true
+  attr :event_dates, :any, default: nil
   attr :last, :boolean, default: false
 
   def week_row(assigns) do
@@ -111,6 +114,7 @@ defmodule SeventhWardEqWeb.CalendarComponents do
           current_month={@current_month}
           selected_date={@selected_date}
           auxiliary_slug={@auxiliary_slug}
+          event_dates={@event_dates}
         />
       <% end %>
 
@@ -129,20 +133,22 @@ defmodule SeventhWardEqWeb.CalendarComponents do
   attr :current_month, :any, required: true
   attr :selected_date, :any, default: nil
   attr :auxiliary_slug, :string, required: true
+  attr :event_dates, :any, default: nil
 
   def day_cell(assigns) do
     assigns =
       assign(assigns,
         in_month: assigns.date.month == assigns.current_month.month,
         is_today: assigns.date == Date.utc_today(),
-        is_selected: assigns.date == assigns.selected_date
+        is_selected: assigns.date == assigns.selected_date,
+        has_events: assigns.event_dates != nil and assigns.date in assigns.event_dates
       )
 
     ~H"""
     <.link
       patch={"?date=#{Date.to_iso8601(@date)}"}
       class={[
-        "flex items-start justify-center pt-1 text-sm font-medium border-r border-base-300",
+        "flex flex-col items-center justify-start pt-1 text-sm font-medium border-r border-base-300",
         "last:border-r-0 cursor-pointer transition-colors duration-100",
         @in_month && "text-base-content hover:bg-base-200/50",
         !@in_month && "text-base-content/25 hover:bg-base-200/30",
@@ -156,6 +162,9 @@ defmodule SeventhWardEqWeb.CalendarComponents do
       ]}>
         {@date.day}
       </span>
+      <%= if @has_events do %>
+        <span class="size-1.5 rounded-full bg-primary mt-0.5 opacity-60"></span>
+      <% end %>
     </.link>
     """
   end

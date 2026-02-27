@@ -20,6 +20,7 @@ defmodule SeventhWardEqWeb.Admin.DashboardLive do
     {:ok,
      socket
      |> assign(:page_title, "Dashboard")
+     |> assign(:current_section, :dashboard)
      |> assign(:post_count, post_count)
      |> assign(:event_count, event_count)}
   end
@@ -28,7 +29,7 @@ defmodule SeventhWardEqWeb.Admin.DashboardLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <Layouts.admin_shell current_scope={@current_scope}>
+      <Layouts.admin_shell current_scope={@current_scope} current_section={@current_section}>
         <div class="p-8">
           <h1 class="text-2xl font-bold text-base-content mb-6">Dashboard</h1>
 

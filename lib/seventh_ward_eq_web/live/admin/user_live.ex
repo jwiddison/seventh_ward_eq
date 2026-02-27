@@ -18,7 +18,7 @@ defmodule SeventhWardEqWeb.Admin.UserLive do
   @impl true
   @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :admins, [])}
+    {:ok, socket |> assign(:admins, []) |> assign(:current_section, :users)}
   end
 
   @impl true
@@ -34,7 +34,7 @@ defmodule SeventhWardEqWeb.Admin.UserLive do
 
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <Layouts.admin_shell current_scope={@current_scope}>
+      <Layouts.admin_shell current_scope={@current_scope} current_section={@current_section}>
         <div class="p-8">
           <%= if @live_action == :index do %>
             <.user_index admins={@admins} />

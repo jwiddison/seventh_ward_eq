@@ -18,7 +18,7 @@ defmodule SeventhWardEqWeb.Admin.EventLive do
   @impl true
   @spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :events, [])}
+    {:ok, socket |> assign(:events, []) |> assign(:current_section, :events)}
   end
 
   @impl true
@@ -32,7 +32,7 @@ defmodule SeventhWardEqWeb.Admin.EventLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <Layouts.admin_shell current_scope={@current_scope}>
+      <Layouts.admin_shell current_scope={@current_scope} current_section={@current_section}>
         <div class="p-8">
           <%= if @live_action == :index do %>
             <.event_index events={@events} current_scope={@current_scope} />
